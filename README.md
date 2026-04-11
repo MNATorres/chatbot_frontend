@@ -1,73 +1,147 @@
-# React + TypeScript + Vite
+<div align="center">
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# 🤖 Chatbot AI — Frontend
 
-Currently, two official plugins are available:
+**Interfaz de chat moderna con soporte Markdown, dark mode y arquitectura de hooks personalizados.**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+[![React](https://img.shields.io/badge/React-19-61dafb?style=flat-square&logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6-3178c6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-8-646cff?style=flat-square&logo=vite)](https://vite.dev/)
 
-## React Compiler
+</div>
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## ✨ Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- 💬 **Chat en tiempo real** conectado al backend AI vía `POST /ask`
+- 🌙 **Dark mode** como único tema, con paleta de colores indigo/violeta
+- 📝 **Renderizado Markdown** — tablas, negritas, listas, código y más
+- ⌨️ **Typing indicator** animado mientras el AI procesa la respuesta
+- 📜 **Auto-scroll** al último mensaje al recibir nuevas respuestas
+- 🧹 **Limpiar chat** con un solo clic
+- ⚡ **Enter para enviar**, Shift+Enter para nueva línea
+- 🔧 **Variables de entorno** para configurar la URL del backend
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🏗️ Arquitectura
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+La conexión al backend se maneja a través de **dos hooks personalizados** con separación clara de responsabilidades:
+
+```
+src/hooks/
+├── useFetch.ts   ← HTTP genérico (GET, POST, PUT, DELETE)
+└── useChat.ts    ← Lógica del chat, consume useFetch
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### `useFetch`
+Hook genérico que encapsula los métodos HTTP. Recibe una `baseUrl` (por defecto desde `.env`) y retorna funciones tipadas con genéricos `<T>`:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```ts
+const { get, post, put, del } = useFetch();
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+const data = await post<{ answer: string }>('/ask', { message: 'Hola' });
 ```
+
+### `useChat`
+Consume `useFetch` y maneja el estado completo de la conversación:
+
+```ts
+const { messages, isLoading, error, sendMessage, clearChat } = useChat();
+```
+
+| Valor | Tipo | Descripción |
+|---|---|---|
+| `messages` | `Message[]` | Historial de la conversación |
+| `isLoading` | `boolean` | `true` mientras espera respuesta del AI |
+| `error` | `string \| null` | Mensaje de error si el request falla |
+| `sendMessage` | `(text: string) => void` | Envía un mensaje al backend |
+| `clearChat` | `() => void` | Limpia el historial |
+
+---
+
+## 📁 Estructura del proyecto
+
+```
+chatbot_frontend/
+├── public/
+├── src/
+│   ├── hooks/
+│   │   ├── useFetch.ts       # Hook HTTP genérico
+│   │   └── useChat.ts        # Hook del chatbot
+│   ├── App.tsx               # UI principal del chat
+│   ├── App.css               # Estilos dark mode
+│   ├── index.css             # Reset y base
+│   └── main.tsx
+├── .env                      # Variables de entorno (no se sube al repo)
+├── .env.example              # Plantilla de variables
+└── vite.config.ts
+```
+
+---
+
+## ⚙️ Variables de entorno
+
+Crea un archivo `.env` en la raíz del proyecto basándote en `.env.example`:
+
+```env
+VITE_API_BASE_URL=http://localhost:8000
+```
+
+> Las variables deben tener el prefijo `VITE_` para ser accesibles desde el cliente. Reiniciar el servidor de desarrollo tras cualquier cambio en `.env`.
+
+---
+
+## 🚀 Instalación y uso
+
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/MNATorres/chatbot_frontend.git
+cd chatbot_frontend
+
+# 2. Instalar dependencias
+npm install
+
+# 3. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con la URL del backend
+
+# 4. Iniciar el servidor de desarrollo
+npm run dev
+```
+
+> Asegúrate de que el backend esté corriendo en la URL configurada antes de abrir el chat.
+
+---
+
+## 🔌 API
+
+El frontend consume los siguientes endpoints del backend:
+
+| Método | Endpoint | Body | Respuesta |
+|--------|----------|------|-----------|
+| `POST` | `/ask` | `{ "message": "string" }` | `{ "answer": "string" }` |
+| `GET` | `/` | — | Health check |
+
+---
+
+## 🛠️ Scripts disponibles
+
+```bash
+npm run dev      # Servidor de desarrollo con HMR
+npm run build    # Build de producción
+npm run preview  # Vista previa del build
+npm run lint     # Análisis estático con ESLint
+```
+
+---
+
+## 📦 Stack
+
+| Tecnología | Versión | Uso |
+|---|---|---|
+| React | 19 | UI y estado |
+| TypeScript | 6 | Tipado estático |
+| Vite | 8 | Bundler y dev server |
+| react-markdown | latest | Renderizado de Markdown |
