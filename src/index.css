@@ -8,8 +8,8 @@ html, body, #root {
 body {
   font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
-  background: #0d0d14;
-  color: #e8e8f8;
+  background: #212121;
+  color: #ececec;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
