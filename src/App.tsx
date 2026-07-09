@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
 import ReactMarkdown from 'react-markdown';
 import useChat from './hooks/useChat';
 import './App.css';
