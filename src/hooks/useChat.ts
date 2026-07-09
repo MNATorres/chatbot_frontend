@@ -12,6 +12,9 @@ const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Conversation key for the backend's memory: messages sharing a session_id
+  // share history server-side (last 8 messages, 30 min inactivity TTL).
+  const [sessionId, setSessionId] = useState(() => crypto.randomUUID());
 
   const { post } = useFetch();
 
@@ -32,7 +35,10 @@ const useChat = () => {
       setError(null);
 
       try {
-        const response = await post<{ answer: string }>('/ask', { message: trimmed });
+        const response = await post<{ answer: string }>('/ask', {
+          message: trimmed,
+          session_id: sessionId,
+        });
 
         const assistantMessage: Message = {
           id: crypto.randomUUID(),
@@ -50,12 +56,15 @@ const useChat = () => {
         setIsLoading(false);
       }
     },
-    [isLoading, post]
+    [isLoading, post, sessionId]
   );
 
   const clearChat = useCallback(() => {
     setMessages([]);
     setError(null);
+    // Fresh session_id so the backend starts a brand-new conversation too —
+    // otherwise "New chat" would only clear the screen, not the memory.
+    setSessionId(crypto.randomUUID());
   }, []);
 
   return { messages, isLoading, error, sendMessage, clearChat };
